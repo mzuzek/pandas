@@ -6,6 +6,7 @@ from typing import (
 )
 
 import numpy as np
+import re
 
 from pandas._typing import (
     FilePath,
@@ -192,6 +193,33 @@ class ODFReader(BaseExcelReader["OpenDocument"]):
 
         return True
 
+    def _parse_odf_time(self, value) -> Scalar:
+        """
+        Helper function to convert ODF variant of ISO 8601 formatted duration
+        "PnYnMnDTnHnMnS" - see https://www.w3.org/TR/xmlschema-2/#duration
+        """
+        prefix = r'^\s*(-)?\s*P'
+        date_part = r'\s*(\d+)\s*Y(\d+)\s*M(\d+)\s*D'
+        time_part = r'\s*(\d+)\s*H\s*(\d+)\s*M\s*(\d+(\.\d+)?)\s*S$'
+        vd = re.match(prefix + date_part + 'T' + time_part, value)
+        time = None
+        if vd is None:
+            vt = re.match(prefix + 'T' + time_part, value) # no date
+            if vt is None: 
+                raise ValueError(f"Failed to parse time value: {value}")
+            time = (vt.group(1) or '',) + vt.group(*range(2, 5))
+        else: # skip date
+            time = (vd.group(1) or '',) + vd.group(*range(5, 8))
+
+        # cast needed here because Scalar doesn't include datetime.time
+        # return cast(Scalar, pd.Timestamp(f'%s%s:%s:%s' % time).time())
+
+        t_sec = (-1 if time[0] == '-' else 1) * (
+                    float(time[1]) * 3600.0 +
+                    float(time[2]) * 60.0 +
+                    float(time[3]))
+        return pd.Timedelta(seconds=t_sec).to_timedelta64()
+
     def _get_cell_value(self, cell) -> Scalar | NaTType:
         from odf.namespaces import OFFICENS
 
@@ -224,9 +252,8 @@ class ODFReader(BaseExcelReader["OpenDocument"]):
             cell_value = cell.attributes.get((OFFICENS, "date-value"))
             return pd.Timestamp(cell_value)
         elif cell_type == "time":
-            stamp = pd.Timestamp(str(cell))
-            # cast needed here because Scalar doesn't include datetime.time
-            return cast(Scalar, stamp.time())
+            cell_value = cell.attributes.get((OFFICENS, "time-value"))
+            return self._parse_odf_time(cell_value)
         else:
             self.close()
             raise ValueError(f"Unrecognized type {cell_type}")
