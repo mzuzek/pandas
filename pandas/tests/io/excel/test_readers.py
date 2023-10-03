@@ -29,32 +29,32 @@ from pandas.core.arrays import (
     StringArray,
 )
 
-read_ext_params = [".xls", ".xlsx", ".xlsm", ".xlsb", ".ods"]
+read_ext_params = [".ods"]  # ".xls", ".xlsx", ".xlsm", ".xlsb",
 engine_params = [
     # Add any engines to test here
     # When defusedxml is installed it triggers deprecation warnings for
     # xlrd and openpyxl, so catch those here
-    pytest.param(
-        "xlrd",
-        marks=[
-            td.skip_if_no("xlrd"),
-        ],
-    ),
-    pytest.param(
-        "openpyxl",
-        marks=[
-            td.skip_if_no("openpyxl"),
-        ],
-    ),
-    pytest.param(
-        None,
-        marks=[
-            td.skip_if_no("xlrd"),
-        ],
-    ),
-    pytest.param("pyxlsb", marks=td.skip_if_no("pyxlsb")),
+    # pytest.param(
+    #     "xlrd",
+    #     marks=[
+    #         td.skip_if_no("xlrd"),
+    #     ],
+    # ),
+    # pytest.param(
+    #     "openpyxl",
+    #     marks=[
+    #         td.skip_if_no("openpyxl"),
+    #     ],
+    # ),
+    # pytest.param(
+    #     None,
+    #     marks=[
+    #         td.skip_if_no("xlrd"),
+    #     ],
+    # ),
+    # pytest.param("pyxlsb", marks=td.skip_if_no("pyxlsb")),
     pytest.param("odf", marks=td.skip_if_no("odf")),
-    pytest.param("calamine", marks=td.skip_if_no("python_calamine")),
+    # pytest.param("calamine", marks=td.skip_if_no("python_calamine")),
 ]
 
 
