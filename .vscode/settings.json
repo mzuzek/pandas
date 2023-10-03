@@ -1,0 +1,12 @@
+{
+    "python.testing.pytestEnabled": true,
+    // "python.testing.cwd": "",
+    "python.testing.cwd": "${workspaceRoot}\\pandas\\tests\\io\\excel",
+    "python.testing.pytestArgs": [
+        // "-n", "16",
+        // "${worspaceRoot}\\pandas\\tests\\io\\excel"
+    ],
+    "pythonTestExplorer.testFramework": "pytest",
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.testing.unittestEnabled": false
+}
